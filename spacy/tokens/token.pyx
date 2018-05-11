@@ -854,6 +854,11 @@ cdef class Token:
         def __get__(self):
             return Lexeme.c_check_flag(self.c.lex, IS_CURRENCY)
 
+    property is_xml:
+        """RETURNS (bool): Whether the lexeme is an XML tag."""
+        def __get__(self):
+            return Lexeme.c_check_flag(self.c.lex, IS_XML)
+
     property like_url:
         """RETURNS (bool): Whether the token resembles a URL."""
         def __get__(self):

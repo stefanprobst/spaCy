@@ -19,9 +19,9 @@ cdef enum attr_id_t:
     IS_LEFT_PUNCT
     IS_RIGHT_PUNCT
     IS_CURRENCY
+    IS_XML
 
-    FLAG19 = 19
-    FLAG20
+    FLAG20 = 20
     FLAG21
     FLAG22
     FLAG23

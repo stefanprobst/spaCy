@@ -16,6 +16,9 @@ from .strings cimport hash_string
 from .errors import Errors, Warnings, deprecation_warning
 from . import util
 
+from .lexeme cimport Lexeme
+from .attrs cimport IS_STOP, IS_XML
+
 
 cdef class Tokenizer:
     """Segment text, and create Doc objects with the discovered segment
@@ -84,12 +87,43 @@ cdef class Tokenizer:
         cdef int start = 0
         cdef bint cache_hit
         cdef bint in_ws = string[0].isspace()
+        cdef bint in_xml_tag = False
         cdef unicode span
         # The task here is much like string.split, but not quite
         # We find spans of whitespace and non-space characters, and ignore
         # spans that are exactly ' '. So, our sequences will all be separated
         # by either ' ' or nothing.
         for uc in string:
+            if (uc == '<'):
+                in_xml_tag = True
+                if start < i:
+                    span = string[start:i]
+                    key = hash_string(span)
+                    cache_hit = self._try_cache(key, doc)
+                    if not cache_hit:
+                        self._tokenize(doc, span, key)
+                    start = i
+                i += 1
+                continue
+            if (uc == '>'):
+                in_xml_tag = False
+                in_ws = False
+                span = string[start:i+1]
+                key = hash_string(span)
+                cache_hit = self._try_cache(key, doc)
+                if not cache_hit:
+                    lex = self.vocab.get(doc.mem, span)
+                    doc.push_back(lex, False)
+                    Lexeme.c_set_flag(<LexemeC *>lex, IS_STOP, True)
+                    Lexeme.c_set_flag(<LexemeC *>lex, IS_XML, True)
+                    # TODO: Figure this out!
+                    # self._save.cached(doc[doc.length], key, 0, 1)
+                start = i + 1
+                i += 1
+                continue
+            if (in_xml_tag):
+                i += 1
+                continue
             if uc.isspace() != in_ws:
                 if start < i:
                     # When we want to make this fast, get the data buffer once

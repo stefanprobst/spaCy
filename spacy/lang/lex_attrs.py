@@ -146,6 +146,13 @@ def is_title(string): return string.istitle()
 def is_upper(string): return string.isupper()
 def is_stop(string, stops=set()): return string in stops
 def is_oov(string): return True
+# This is just to reserve the place in vocab, so that
+# it doesn't get reassigned with nlp.vocab.add_flag().
+# Because this is a regular Python file,
+# it would probably also be ok to just reserve
+# with IS_XML = nlp.vocab.add_flag(lambda text: False)
+# before starting the pipeline
+def is_xml(string): return False
 def get_prob(string): return -20.
 
 LEX_ATTRS = {
@@ -162,6 +169,7 @@ LEX_ATTRS = {
     attrs.IS_UPPER: is_upper,
     attrs.IS_STOP: is_stop,
     attrs.IS_OOV: is_oov,
+    attrs.IS_XML: is_xml,
     attrs.PROB: get_prob,
     attrs.LIKE_EMAIL: like_email,
     attrs.LIKE_NUM: like_num,
